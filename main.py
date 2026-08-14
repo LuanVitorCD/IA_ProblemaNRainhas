@@ -1,4 +1,5 @@
 import streamlit as st
+import streamlit.components.v1 as components
 import math
 import time
 
@@ -86,6 +87,116 @@ def render_empty_board(n):
     empty_board = [[0]*n for _ in range(n)]
     return render_centered_board(empty_board, n)
 
+def render_interactive_board(n):
+    """Gera um HTML interativo (JS) para inserção manual e detecção de conflitos ao vivo."""
+    html = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+    <style>
+        body {{
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: transparent;
+            overflow: hidden;
+            font-family: sans-serif;
+        }}
+        #board {{
+            display: grid;
+            grid-template-columns: repeat({n}, 1fr);
+            grid-template-rows: repeat({n}, 1fr);
+            width: 90vmin;
+            height: 90vmin;
+            border: 4px solid #222;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+        }}
+        .cell {{
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: calc(60vmin / {n});
+            cursor: pointer;
+            user-select: none;
+            transition: background-color 0.2s, transform 0.1s;
+            color: #000;
+        }}
+        .cell:active {{
+            transform: scale(0.90);
+        }}
+        .light {{ background-color: #f0d9b5; }}
+        .dark {{ background-color: #b58863; }}
+        .conflict {{
+            background-color: #ff4d4d !important;
+            box-shadow: inset 0 0 20px #cc0000;
+        }}
+    </style>
+    </head>
+    <body>
+        <div id="board"></div>
+        <script>
+            const n = {n};
+            let queens = [];
+
+            function render() {{
+                const board = document.getElementById('board');
+                board.innerHTML = '';
+                
+                // Analisa todos os conflitos (mesma linha, coluna ou diagonais)
+                let conflicts = new Set();
+                for(let i = 0; i < queens.length; i++) {{
+                    for(let j = i + 1; j < queens.length; j++) {{
+                        let q1 = queens[i];
+                        let q2 = queens[j];
+                        if(q1.r === q2.r || q1.c === q2.c || Math.abs(q1.r - q2.r) === Math.abs(q1.c - q2.c)) {{
+                            conflicts.add(q1.r + ',' + q1.c);
+                            conflicts.add(q2.r + ',' + q2.c);
+                        }}
+                    }}
+                }}
+
+                // Renderiza o grid de quadrados
+                for(let r = 0; r < n; r++) {{
+                    for(let c = 0; c < n; c++) {{
+                        const cell = document.createElement('div');
+                        const isLight = (r + c) % 2 === 0;
+                        cell.className = 'cell ' + (isLight ? 'light' : 'dark');
+                        
+                        if (queens.some(q => q.r === r && q.c === c)) {{
+                            cell.innerHTML = '♛';
+                        }}
+                        
+                        // Se essa célula estiver no radar de conflitos, pinta de vermelho
+                        if (conflicts.has(r + ',' + c)) {{
+                            cell.classList.add('conflict');
+                        }}
+
+                        // Evento de clique para adicionar/remover
+                        cell.onclick = () => {{
+                            const idx = queens.findIndex(q => q.r === r && q.c === c);
+                            if (idx !== -1) {{
+                                queens.splice(idx, 1); // Remove
+                            }} else {{
+                                queens.push({{r: r, c: c}}); // Adiciona
+                            }}
+                            render();
+                        }};
+                        
+                        board.appendChild(cell);
+                    }}
+                }}
+            }}
+            
+            // Renderização inicial
+            render();
+        </script>
+    </body>
+    </html>
+    """
+    return html
+
 def main():
     st.set_page_config(page_title="N-Rainhas IA Profiler", layout="wide", initial_sidebar_state="expanded")
     
@@ -114,6 +225,9 @@ def main():
     
     n = st.sidebar.slider("Tamanho do Tabuleiro (N)", min_value=1, max_value=20, value=8, step=1)
     
+    # Novo toggle para o Modo Manual
+    modo_manual = st.sidebar.toggle("Modo Manual (Interativo)", value=False, help="Permite inserir e remover rainhas com cliques. Detecta e colore conflitos instantaneamente em vermelho.")
+    
     # Toggle para ativar/desativar a varredura completa da árvore (pode ser pesado para N > 14)
     calcular_todas = st.sidebar.toggle("Calcular TODAS as soluções", value=False, help="Se ativado, o algoritmo percorrerá toda a árvore de estado para encontrar todas as ramificações de sucesso. Para N alto, demora muito.")
     
@@ -132,7 +246,8 @@ def main():
     # 3. Medindo tempo de TODAS as soluções (se ativado)
     valid_solutions = "?"
     time_all_ms = 0
-    if calcular_todas:
+    # Desativa a carga pesada da IA se o usuário estiver brincando no modo manual
+    if calcular_todas and not modo_manual:
         with st.sidebar:
             with st.spinner(f"Explorando a árvore para N={n}..."):
                 t0_all = time.perf_counter()
@@ -144,21 +259,25 @@ def main():
     
     st.sidebar.metric(label=f"Espaço de Estados Total", value=fmt_combinations, help="De quantas formas é possível jogar N rainhas aleatoriamente.")
     
-    # Mostrar métricas condicionais de acordo com a escolha
-    col1, col2 = st.sidebar.columns(2)
-    with col1:
-        st.metric(label="Tempo (1 Solução)", value=f"{time_one_ms:.2f} ms")
-    with col2:
-        if calcular_todas:
-            st.metric(label="Tempo (Varredura)", value=f"{time_all_ms/1000:.2f} s" if time_all_ms > 1000 else f"{time_all_ms:.2f} ms")
-        else:
-            st.metric(label="Tempo (Varredura)", value="Desativado")
-            
-    # Resultado numérico da varredura
-    st.sidebar.metric(label="Soluções Seguras", value=f"{valid_solutions:,}".replace(",", ".") if isinstance(valid_solutions, int) else valid_solutions)
-    
-    if n in [2, 3]:
-        st.sidebar.error(f"Não existe solução para N={n}.")
+    if not modo_manual:
+        # Mostrar métricas condicionais de acordo com a escolha (Modo IA)
+        col1, col2 = st.sidebar.columns(2)
+        with col1:
+            st.metric(label="Tempo (1 Solução)", value=f"{time_one_ms:.2f} ms")
+        with col2:
+            if calcular_todas:
+                st.metric(label="Tempo (Varredura)", value=f"{time_all_ms/1000:.2f} s" if time_all_ms > 1000 else f"{time_all_ms:.2f} ms")
+            else:
+                st.metric(label="Tempo (Varredura)", value="Desativado")
+                
+        # Resultado numérico da varredura
+        st.sidebar.metric(label="Soluções Seguras", value=f"{valid_solutions:,}".replace(",", ".") if isinstance(valid_solutions, int) else valid_solutions)
+        
+        if n in [2, 3]:
+            st.sidebar.error(f"Não existe solução para N={n}.")
+    else:
+        # Mensagem pro modo manual
+        st.sidebar.info("Modo Manual Ativo 👆\n\nClique no tabuleiro para testar as rainhas. As métricas de desempenho da IA estão em pausa.")
 
     st.sidebar.markdown("---")
     info_html = """
@@ -171,12 +290,18 @@ def main():
     """
     st.sidebar.markdown(info_html, unsafe_allow_html=True)
 
-    if board is not None:
-        board_html = render_centered_board(board, n)
-        st.markdown(board_html, unsafe_allow_html=True)
+    if modo_manual:
+        # Modo Manual usa a integração com iframe para rodar o Javascript cliente interativo
+        html_interativo = render_interactive_board(n)
+        components.html(html_interativo, height=750)
     else:
-        board_html = render_empty_board(n)
-        st.markdown(board_html, unsafe_allow_html=True)
+        # Modo IA carrega o gabarito instantâneo
+        if board is not None:
+            board_html = render_centered_board(board, n)
+            st.markdown(board_html, unsafe_allow_html=True)
+        else:
+            board_html = render_empty_board(n)
+            st.markdown(board_html, unsafe_allow_html=True)
 
 if __name__ == "__main__":
     main()
