@@ -199,6 +199,8 @@ def render_interactive_board(n):
 
 def main():
     st.set_page_config(page_title="N-Rainhas IA Profiler", layout="wide", initial_sidebar_state="expanded")
+
+    primary_color = st.get_option("theme.primaryColor")
     
     # CSS para ocultar itens inúteis mas preservar o Header onde o botão de abrir sidebar reside
     hide_st_style = """
@@ -216,14 +218,42 @@ def main():
             html, body, [data-testid="stAppViewContainer"] {
                 overflow: hidden !important;
             }
+
+            div {
+                text-align: justify;
+            }
             </style>
             """
     st.markdown(hide_st_style, unsafe_allow_html=True)
 
-    st.sidebar.title("Configurações IA ⚙️")
-    st.sidebar.markdown("---")
+
+    title_html = f"""
+                <div style='background-color: #1e1e1e; padding: 5px; border-radius: 5px; border-left: 4px solid {primary_color}; margin-left: 10px;'>
+                    <h1 style='font-size: 32px; margin-left: 10px;'><b>Problema das N-Rainhas</b><br>
+                        <i style='font-size: 20px; margin-left: 10px;'><b style='color: {primary_color};'>Grupo: </b> Ana, Luan e Wesley</i>
+                    </h1>
+                </div>
+                """
     
-    n = st.sidebar.slider("Tamanho do Tabuleiro (N)", min_value=1, max_value=20, value=8, step=1)
+    st.sidebar.markdown(title_html, unsafe_allow_html=True)
+
+    st.sidebar.markdown("<br>", unsafe_allow_html=True)
+    
+    info_html = """
+            <div style='background-color: #1e1e1e; padding: 15px; border-radius: 5px; border-left: 2px solid #5ea1ff; font-size: 16px; margin-bottom: 15px;'>
+                <b style='color: #5ea1ff;'>Problema de Satisfação de Restrições (CSP)</b><br>
+                O <b>Problema das N-Rainhas</b> é resolvido através do algoritmo de <i>Backtracking</i> (Busca em Profundidade).<br><br>
+                <b>Complexidade de Tempo: <code>O(N!)</code></b><br>
+                O pior caso cresce de forma fatorial. A versão completa utiliza <b>Bitwise Pruning</b> para pular milhares de galhos inúteis da árvore, mas a barreira teórica assintótica permanece O(N!).
+            </div>
+            """
+    with st.sidebar.expander("Explicação Algoritmo", expanded=True, icon="ℹ️"):
+        st.markdown(info_html, unsafe_allow_html=True)
+
+    st.sidebar.divider()
+
+    st.sidebar.subheader("Configurações do Algoritmo")
+    n = st.sidebar.slider("Tamanho do Tabuleiro (N)", min_value=1, max_value=20, value=8, step=1, help="Define o tamanho do tabuleiro NxN e o número de rainhas a serem posicionadas. Para N > 14, a varredura completa pode ser lenta então o limite imposto pelo grupo é de até 20.")
     
     # Novo toggle para o Modo Manual
     modo_manual = st.sidebar.toggle("Modo Manual (Interativo)", value=False, help="Permite inserir e remover rainhas com cliques. Detecta e colore conflitos instantaneamente em vermelho.")
@@ -232,7 +262,8 @@ def main():
     calcular_todas = st.sidebar.toggle("Calcular TODAS as soluções", value=False, help="Se ativado, o algoritmo percorrerá toda a árvore de estado para encontrar todas as ramificações de sucesso. Para N alto, demora muito.")
     
     st.sidebar.markdown("---")
-    st.sidebar.subheader("Estatísticas & Performance ⏱️")
+    st.sidebar.subheader("Estatísticas & Performance")
+
 
     # 1. Combinações Brutas Iniciais
     total_combinations = math.comb(n*n, n)
@@ -263,32 +294,21 @@ def main():
         # Mostrar métricas condicionais de acordo com a escolha (Modo IA)
         col1, col2 = st.sidebar.columns(2)
         with col1:
-            st.metric(label="Tempo (1 Solução)", value=f"{time_one_ms:.2f} ms")
+            st.metric(label="Tempo (1 Solução)", value=f"{time_one_ms:.2f} ms", help="Tempo para encontrar a primeira solução válida (Backtracking).")
         with col2:
             if calcular_todas:
-                st.metric(label="Tempo (Varredura)", value=f"{time_all_ms/1000:.2f} s" if time_all_ms > 1000 else f"{time_all_ms:.2f} ms")
+                st.metric(label="Tempo (Varredura)", value=f"{time_all_ms/1000:.2f} s" if time_all_ms > 1000 else f"{time_all_ms:.2f} ms", help="Tempo para explorar todas as soluções possíveis.")
             else:
-                st.metric(label="Tempo (Varredura)", value="Desativado")
+                st.metric(label="Tempo (Varredura)", value="Desativado", help="Varredura completa da árvore está desativada. Ative para calcular todas as soluções possíveis.")
                 
         # Resultado numérico da varredura
-        st.sidebar.metric(label="Soluções Seguras", value=f"{valid_solutions:,}".replace(",", ".") if isinstance(valid_solutions, int) else valid_solutions)
+        st.sidebar.metric(label="Soluções Seguras", value=f"{valid_solutions:,}".replace(",", ".") if isinstance(valid_solutions, int) else valid_solutions, help="Número total de soluções válidas encontradas (Backtracking + Bitwise).") 
         
         if n in [2, 3]:
             st.sidebar.error(f"Não existe solução para N={n}.")
     else:
         # Mensagem pro modo manual
-        st.sidebar.info("Modo Manual Ativo 👆\n\nClique no tabuleiro para testar as rainhas. As métricas de desempenho da IA estão em pausa.")
-
-    st.sidebar.markdown("---")
-    info_html = """
-    <div style='background-color: #1e1e1e; padding: 15px; border-radius: 10px; border-left: 4px solid #4CAF50; font-size: 14px;'>
-        <b style='color: #4CAF50;'>Problema de Satisfação de Restrições (CSP)</b><br>
-        O <b>Problema das N-Rainhas</b> é resolvido através do algoritmo de <i>Backtracking</i> (Busca em Profundidade).<br><br>
-        <b>Complexidade de Tempo:</b> <code>O(N!)</code><br>
-        O pior caso cresce de forma fatorial. A versão completa utiliza <b>Bitwise Pruning</b> para pular milhares de galhos inúteis da árvore, mas a barreira teórica assintótica permanece O(N!).
-    </div>
-    """
-    st.sidebar.markdown(info_html, unsafe_allow_html=True)
+        st.sidebar.info("**Modo Manual Ativo** \n\nClique no tabuleiro para testar as rainhas. As métricas de desempenho da IA estão em pausa.")
 
     if modo_manual:
         # Modo Manual usa a integração com iframe para rodar o Javascript cliente interativo
