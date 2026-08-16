@@ -109,8 +109,8 @@ def render_interactive_board(n):
             display: grid;
             grid-template-columns: repeat({n}, 1fr);
             grid-template-rows: repeat({n}, 1fr);
-            width: 90vmin;
-            height: 90vmin;
+            width: 83vmin;
+            height: 83vmin;
             border: 4px solid #222;
             box-shadow: 0 10px 20px rgba(0,0,0,0.3);
         }}
