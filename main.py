@@ -97,6 +97,7 @@ def render_interactive_board(n):
         body {{
             margin: 0;
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
             height: 100vh;
@@ -113,11 +114,46 @@ def render_interactive_board(n):
             border: 4px solid #222;
             box-shadow: 0 10px 20px rgba(0,0,0,0.3);
         }}
+        .controls-container {{
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+            min-height: 45px; /* Mantém o espaço reservado para não pular a tela */
+            visibility: hidden; /* Escondido por padrão até ter rainhas */
+        }}
+        .btn {{
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 5px;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            transition: 0.2s;
+        }}
+        .btn:active {{
+            transform: scale(0.95);
+        }}
+        #btnReiniciar {{
+            background-color: #ff1a1a; /* Vermelho forte */
+        }}
+        #btnReiniciar:hover {{
+            background-color: #e60000;
+        }}
+        #btnDesfazer {{
+            background-color: #8c3f3f; /* Vermelho escuro */
+        }}
+        #btnDesfazer:hover {{
+            background-color: #e06666;
+        }}
+
         .cell {{
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: calc(60vmin / {n});
+            font-size: calc(50vmin / {n});
             cursor: pointer;
             user-select: none;
             transition: background-color 0.2s, transform 0.1s;
@@ -128,19 +164,49 @@ def render_interactive_board(n):
         }}
         .light {{ background-color: #f0d9b5; }}
         .dark {{ background-color: #b58863; }}
+        
         .conflict {{
             background-color: #ff4d4d !important;
-            box-shadow: inset 0 0 20px #cc0000;
+            box-shadow: inset 0 0 20px #cc0000 !important;
+        }}
+        .attacked {{
+            /* Usando inset shadow transparente para tingir a casa de vermelho vibrante 
+               sem perder a cor de fundo (clara ou escura) */
+            box-shadow: inset 0 0 0 9999px rgba(255, 0, 0, 0.5) !important;
         }}
     </style>
     </head>
     <body>
         <div id="board"></div>
+        <div class="controls-container" id="controls">
+            <button class="btn" id="btnDesfazer" onclick="desfazer()">Desfazer</button>
+            <button class="btn" id="btnReiniciar" onclick="reiniciar()">Reiniciar</button>
+        </div>
         <script>
             const n = {n};
-            let queens = [];
+            let queens = []; // O array funciona perfeitamente como uma pilha (Stack)
+
+            function reiniciar() {{
+                queens = [];
+                render();
+            }}
+
+            function desfazer() {{
+                if (queens.length > 0) {{
+                    queens.pop(); // Remove o último elemento inserido (LIFO)
+                    render();
+                }}
+            }}
 
             function render() {{
+                // Lógica de visibilidade dos botões
+                const controls = document.getElementById('controls');
+                if (queens.length > 0) {{
+                    controls.style.visibility = 'visible';
+                }} else {{
+                    controls.style.visibility = 'hidden';
+                }}
+
                 const board = document.getElementById('board');
                 board.innerHTML = '';
                 
@@ -164,12 +230,26 @@ def render_interactive_board(n):
                         const isLight = (r + c) % 2 === 0;
                         cell.className = 'cell ' + (isLight ? 'light' : 'dark');
                         
-                        if (queens.some(q => q.r === r && q.c === c)) {{
+                        let isAttacked = false;
+                        let hasQueen = false;
+
+                        // Verifica se a casa está sob ataque ou possui uma rainha
+                        for (let q of queens) {{
+                            if (q.r === r && q.c === c) {{
+                                hasQueen = true;
+                            }} else if (q.r === r || q.c === c || Math.abs(q.r - r) === Math.abs(q.c - c)) {{
+                                isAttacked = true;
+                            }}
+                        }}
+
+                        if (hasQueen) {{
                             cell.innerHTML = '♛';
+                        }} else if (isAttacked) {{
+                            cell.classList.add('attacked');
                         }}
                         
-                        // Se essa célula estiver no radar de conflitos, pinta de vermelho
-                        if (conflicts.has(r + ',' + c)) {{
+                        // Se essa célula estiver no radar de conflitos, pinta de vermelho forte
+                        if (hasQueen && conflicts.has(r + ',' + c)) {{
                             cell.classList.add('conflict');
                         }}
 
@@ -177,9 +257,9 @@ def render_interactive_board(n):
                         cell.onclick = () => {{
                             const idx = queens.findIndex(q => q.r === r && q.c === c);
                             if (idx !== -1) {{
-                                queens.splice(idx, 1); // Remove
+                                queens.splice(idx, 1); // Remove diretamente se clicar nela
                             }} else {{
-                                queens.push({{r: r, c: c}}); // Adiciona
+                                queens.push({{r: r, c: c}}); // Adiciona no final da pilha
                             }}
                             render();
                         }};
