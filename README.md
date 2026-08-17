@@ -1,6 +1,6 @@
 # 👑 PROBLEMA DAS N-RAINHAS
 
-O **Problema das N-rainhas** consiste em posicionar $N$ rainhas em um tabuleiro de xadrez de dimensões $N \times N$ de tal forma que nenhuma rainha consiga atacar outra. Pelas regras do xadrez, isso significa que **duas rainhas não podem compartilhar a mesma linha, a mesma coluna ou a mesma diagonal**. 
+O **Problema das N-Rainhas** consiste em posicionar $N$ rainhas em um tabuleiro de xadrez de dimensões $N \times N$ de tal forma que nenhuma rainha consiga atacar outra. Pelas regras do xadrez, isso significa que **duas rainhas não podem compartilhar a mesma linha, a mesma coluna ou a mesma diagonal**. 
 
 O problema é resolvido computacionalmente através do algoritmo de **Backtracking (Busca em Profundidade)**. 
 - **Complexidade de Tempo: `O(N!)`**
