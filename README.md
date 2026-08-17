@@ -63,16 +63,6 @@ No modo manual, a checagem matemática ocorre instantaneamente no lado do client
 
 ### Diagrama Simplificado
 ```mermaid
-%%{init: {
-  'theme': 'base',
-  'themeVariables': {
-    'primaryTextColor': '#000000',
-    'primaryBorderColor': '#343a40',
-    'lineColor': '#343a40',
-    'textColor': '#000000',
-    'edgeLabelBackground': '#ffffff'
-  }
-}}%%
 graph TD
     A[Usuário] -->|Ajusta N e Toggles| B(Streamlit / Python)
     B -->|Avalia Parâmetros| C{Modo Manual?}
