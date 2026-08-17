@@ -66,16 +66,8 @@ No modo manual, a checagem matemática ocorre instantaneamente no lado do client
 %%{init: {
   'theme': 'base',
   'themeVariables': {
-    'background': '#ffffff',
-    'primaryColor': '#f8f9fa',
     'primaryTextColor': '#000000',
     'primaryBorderColor': '#343a40',
-    'secondaryColor': '#ffffff',
-    'secondaryTextColor': '#000000',
-    'secondaryBorderColor': '#343a40',
-    'tertiaryColor': '#ffffff',
-    'tertiaryTextColor': '#000000',
-    'tertiaryBorderColor': '#343a40',
     'lineColor': '#343a40',
     'textColor': '#000000',
     'edgeLabelBackground': '#ffffff'
