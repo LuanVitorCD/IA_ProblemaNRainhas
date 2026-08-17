@@ -26,7 +26,7 @@ O projeto está estruturado da seguinte forma para separar lógica de backend, f
 ├── 📄 main.py               # Motor central: Interface Streamlit, algoritmos Backtracking e DFS Avançado.
 ├── 📄 README.md             # Documentação técnica e arquitetural da aplicação.
 ├── 📄 .gitignore            # Regras de exclusão de artefatos para o repositório Git.
-├── 📄 requirements.txt      # Mapeamento de dependências Python (ex: streamlit).
+├── 📄 requirements.txt      # Mapeamento de dependências Python (ex.: streamlit).
 ├── 📁 .devcontainer         
 │   └── 📄 devcontainer.json # Configuração de contêineres para padronização do ambiente (Codespaces/Docker).
 ├── 📁 .streamlit            
@@ -103,7 +103,7 @@ graph TD
 
 ---
 
-## 🚀 INSTALAÇÃO E EXECUÇÃO
+## 🚀 INSTALAÇÃO E ECUÇÃO
 
 ### Pré-requisitos:
 1. Crie o seu ambiente virtual Python
@@ -124,13 +124,13 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-### Executando localmente:
+### ecutando localmente:
 1. Rode o código Streamlit
 ```bash
 streamlit run main.py
 ```
 2. Acesse no seu navegador
-```text
+```tt
 http://localhost:8501/
 ```
 
