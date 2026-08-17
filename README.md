@@ -23,15 +23,15 @@ O projeto está estruturado da seguinte forma para separar lógica de backend, f
 
 ```text
 📁 Raiz do Projeto
-├── 📄 main.py               # Motor central: Interface Streamlit, algoritmos Backtracking e DFS Avançado.
-├── 📄 README.md             # Documentação técnica e arquitetural da aplicação.
-├── 📄 .gitignore            # Regras de exclusão de artefatos para o repositório Git.
-├── 📄 requirements.txt      # Mapeamento de dependências Python (ex.: streamlit).
+├── 📄 main.py                 # Motor central: Interface Streamlit, algoritmos Backtracking e DFS Avançado.
+├── 📄 README.md               # Documentação técnica e arquitetural da aplicação.
+├── 📄 .gitignore              # Regras de exclusão de artefatos para o repositório Git.
+├── 📄 requirements.txt        # Mapeamento de dependências Python (ex.: streamlit).
 ├── 📁 .devcontainer         
-│   └── 📄 devcontainer.json # Configuração de contêineres para padronização do ambiente (Codespaces/Docker).
+│   └── 📄 devcontainer.json   # Configuração de contêineres para padronização do ambiente (Codespaces/Docker).
 ├── 📁 .streamlit            
-│   └── 📄 config.toml       # Sobrescrita visual nativa (Força o tema escuro e a cor primária #3977ff).
-└── 📁 assets                # Imagens, GIFs e PDFs (Registro de Prompts) utilizados na documentação.
+│   └── 📄 config.toml         # Sobrescrita visual nativa (Força o tema escuro e a cor primária #3977ff).
+└── 📁 assets                  # Imagens, GIFs e PDFs (Registro de Prompts) utilizados na documentação.
     ├── 🖼️ CompleteExample.gif
     ├── 📄 Registro de Prompts.pdf
     ├── 🖼️ TelaCompletaTamanho12.png
@@ -47,8 +47,8 @@ A aplicação utiliza uma **arquitetura híbrida** para contornar as limitaçõe
 
 ### Principais Componentes
 - **Backend e Interface Base (Python/Streamlit):** O Streamlit atua como o motor central. Ele gerencia a interface, recebe os parâmetros do usuário ($N$) e possui duas rotas de execução para o algoritmo automático:
-  1. **Busca Rápida (Gabarito Visual):** Executa o algoritmo de *Backtracking* tradicional apenas até encontrar a primeira solução válida, permitindo a renderização instantânea do tabuleiro.
-  2. **Varredura Completa (Toggle "Calcular Todas"):** Se ativado, aciona o algoritmo DFS utilizando *Bitwise Pruning* (operações lógicas bit a bit). Ele explora toda a árvore de estado para contar o número exato de soluções seguras e atualizar as métricas na barra lateral.
+  - **Busca Rápida (Gabarito Visual):** Executa o algoritmo de *Backtracking* tradicional apenas até encontrar a primeira solução válida, permitindo a renderização instantânea do tabuleiro.
+  - **Varredura Completa (Toggle "Calcular Todas"):** Se ativado, aciona o algoritmo DFS utilizando *Bitwise Pruning* (operações lógicas bit a bit). Ele explora toda a árvore de estado para contar o número exato de soluções seguras e atualizar as métricas na barra lateral.
 - **Frontend Interativo (HTML/CSS/JS):** Para o *Modo Manual*, a aplicação suspende os algoritmos em Python e injeta um componente web isolado via *iframe* (`components.html`). Isso transfere toda a lógica de interação (cliques e validação) para o navegador do usuário, sem necessidade de comunicação constante com o servidor.
 
 ### Representação do Tabuleiro e Rainhas
@@ -57,9 +57,9 @@ A aplicação utiliza uma **arquitetura híbrida** para contornar as limitaçõe
 
 ### Verificação de Conflitos
 No modo manual, a checagem matemática ocorre instantaneamente no lado do cliente:
-1. **Linhas e Colunas:** Verifica-se se rainhas distintas compartilham a mesma linha (`q1.r === q2.r`) ou coluna (`q1.c === q2.c`).
-2. **Diagonais:** Confere-se se a diferença absoluta entre as linhas é igual à diferença absoluta entre as colunas (`Math.abs(q1.r - q2.r) === Math.abs(q1.c - q2.c)`).
-3. **Feedback Visual:** As células sob ameaça recebem dinamicamente a classe CSS `.conflict`, colorindo as casas de vermelho.
+- **Linhas e Colunas:** Verifica-se se rainhas distintas compartilham a mesma linha (`q1.r === q2.r`) ou coluna (`q1.c === q2.c`).
+- **Diagonais:** Confere-se se a diferença absoluta entre as linhas é igual à diferença absoluta entre as colunas (`Math.abs(q1.r - q2.r) === Math.abs(q1.c - q2.c)`).
+- **Feedback Visual:** As células sob ameaça recebem dinamicamente a classe CSS `.conflict`, colorindo as casas de vermelho.
 
 ### Diagrama Simplificado
 ```mermaid
@@ -124,7 +124,7 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-### ecutando localmente:
+### Executando localmente:
 1. Rode o código Streamlit
 ```bash
 streamlit run main.py
