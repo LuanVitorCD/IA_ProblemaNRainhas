@@ -13,7 +13,7 @@ Esta aplicação foi desenvolvida para ilustrar e resolver interativamente esse 
   <img src="./assets/CompleteExample.gif" alt="Aplicação rodando">
 </p>
 
-- **Link para testar:** https://ia-problemanrainhas.streamlit.app/
+- **Link da aplicação web:** https://ia-problemanrainhas.streamlit.app/
 
 ---
 
@@ -103,15 +103,20 @@ graph TD
 
 ---
 
-## 🚀 INSTALAÇÃO E ECUÇÃO
+## 🚀 INSTALAÇÃO E EXECUÇÃO LOCAL
 
-### Pré-requisitos:
-1. Crie o seu ambiente virtual Python
+### 1. Clone o repositório
+```bash
+git clone https://github.com/LuanVitorCD/IA_ProblemaNRainhas.git
+cd IA_ProblemaNRainhas
+```
+
+### 2. Crie o seu ambiente virtual Python
 ```bash
 python -m venv venv
 ```
 
-2. Ative o ambiente virtual
+### 3. Ative o ambiente virtual
 ```bash
 # Windows
 venv\Scripts\activate
@@ -119,18 +124,18 @@ venv\Scripts\activate
 source venv/bin/activate
 ```
 
-3. Instale todas as bibliotecas Python que serão usadas
+### 4. Instale todas as bibliotecas Python que serão usadas
 ```bash
 pip install -r requirements.txt
 ```
 
-### Executando localmente:
-1. Rode o código Streamlit
+### 5. Rode o código Streamlit
 ```bash
 streamlit run main.py
 ```
-2. Acesse no seu navegador
-```tt
+
+### 6. Acesse no seu navegador
+```
 http://localhost:8501/
 ```
 
