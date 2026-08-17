@@ -19,19 +19,19 @@ Esta aplicação foi desenvolvida para ilustrar e resolver interativamente esse 
 
 ## 📂 ORGANIZAÇÃO DO PROJETO
 
-O projeto está estruturado da seguinte forma para separar configurações, código-fonte e recursos visuais:
+O projeto está estruturado da seguinte forma para separar lógica de backend, frontend injetado e configurações de ambiente:
 
 ```text
 📁 Raiz do Projeto
-├── 📄 main.py               # Código principal (Interface Streamlit e Algoritmos de Busca em Python)
-├── 📄 README.md             # Documentação do projeto
-├── 📄 .gitignore            # Arquivos ignorados pelo controle de versão (Git)
-├── 📄 requirements.txt      # Bibliotecas e dependências necessárias
+├── 📄 main.py               # Motor central: Interface Streamlit, algoritmos Backtracking e DFS Avançado.
+├── 📄 README.md             # Documentação técnica e arquitetural da aplicação.
+├── 📄 .gitignore            # Regras de exclusão de artefatos para o repositório Git.
+├── 📄 requirements.txt      # Mapeamento de dependências Python (ex: streamlit).
 ├── 📁 .devcontainer         
-│   └── 📄 devcontainer.json # Configuração de ambiente conteinerizado (Docker/Codespaces)
+│   └── 📄 devcontainer.json # Configuração de contêineres para padronização do ambiente (Codespaces/Docker).
 ├── 📁 .streamlit            
-│   └── 📄 config.toml       # Configurações de tema e comportamento da interface do Streamlit
-└── 📁 assets                # Recursos estáticos
+│   └── 📄 config.toml       # Sobrescrita visual nativa (Força o tema escuro e a cor primária #3977ff).
+└── 📁 assets                # Imagens, GIFs e PDFs (Registro de Prompts) utilizados na documentação.
     ├── 🖼️ CompleteExample.gif
     ├── 📄 Registro de Prompts.pdf
     ├── 🖼️ TelaCompletaTamanho12.png
@@ -43,36 +43,45 @@ O projeto está estruturado da seguinte forma para separar configurações, cód
 
 ## 🏗️ ARQUITETURA PROPOSTA
 
-A aplicação utiliza uma **arquitetura híbrida** para contornar as limitações do framework padrão do Streamlit (que recarrega a página a cada interação) e garantir uma experiência fluida para o usuário. 
+A aplicação utiliza uma **arquitetura híbrida** para contornar as limitações de recarregamento do Streamlit, dividindo responsabilidades entre o servidor e o cliente. 
 
 ### Principais Componentes
-- **Backend e Interface Base (Python/Streamlit):** O Streamlit atua como o motor central. Ele gerencia a barra lateral, recebe o tamanho ($N$) do tabuleiro e executa os algoritmos pesados de busca no servidor (Backtracking para encontrar uma solução rápida e DFS com *Bitwise Pruning* para contar o total de soluções).
-- **Frontend Interativo (HTML/CSS/JS):** Para o *Modo Manual*, injetamos um componente web isolado via *iframe* (`components.html`). Isso transfere a interação (inserção, remoção e validação visual de conflitos) para o navegador do cliente, ocorrendo instantaneamente sem recarregar o servidor.
+- **Backend e Interface Base (Python/Streamlit):** O Streamlit atua como o motor central. Ele gerencia a interface, recebe os parâmetros do usuário ($N$) e possui duas rotas de execução para o algoritmo automático:
+  1. **Busca Rápida (Gabarito Visual):** Executa o algoritmo de *Backtracking* tradicional apenas até encontrar a primeira solução válida, permitindo a renderização instantânea do tabuleiro.
+  2. **Varredura Completa (Toggle "Calcular Todas"):** Se ativado, aciona o algoritmo DFS utilizando *Bitwise Pruning* (operações lógicas bit a bit). Ele explora toda a árvore de estado para contar o número exato de soluções seguras e atualizar as métricas na barra lateral.
+- **Frontend Interativo (HTML/CSS/JS):** Para o *Modo Manual*, a aplicação suspende os algoritmos em Python e injeta um componente web isolado via *iframe* (`components.html`). Isso transfere toda a lógica de interação (cliques e validação) para o navegador do usuário, sem necessidade de comunicação constante com o servidor.
 
 ### Representação do Tabuleiro e Rainhas
-- **O Tabuleiro:** É renderizado de forma responsiva através de CSS (`display: grid`), dispensando a criação de matrizes complexas na memória apenas para o aspecto visual.
-- **As Rainhas:** No modo interativo (JS), são armazenadas em um *array* de objetos (`queens`), guardando somente as coordenadas de linha e coluna (`{r, c}`). Esse array funciona como uma **Pilha (LIFO)**. Ao clicar em "Desfazer", o sistema aplica um `queens.pop()`, removendo a última rainha inserida.
+- **O Tabuleiro:** É renderizado de forma responsiva através de CSS (`display: grid`), dispensando a criação de matrizes complexas na memória para o aspecto visual.
+- **As Rainhas:** No modo interativo (JS), são armazenadas em um *array* de objetos (`queens`), guardando somente as coordenadas de linha e coluna (`{r, c}`). Esse array funciona como uma **Pilha (LIFO)**. Ao clicar em "Desfazer", o sistema aplica um `queens.pop()`, removendo a última jogada.
 
 ### Verificação de Conflitos
-A checagem matemática ocorre em tempo real, varrendo todos os pares de rainhas alocadas:
-1. **Linha e Coluna:** Verifica-se se compartilham a mesma linha (`q1.r === q2.r`) ou a mesma coluna (`q1.c === q2.c`).
+No modo manual, a checagem matemática ocorre instantaneamente no lado do cliente:
+1. **Linhas e Colunas:** Verifica-se se rainhas distintas compartilham a mesma linha (`q1.r === q2.r`) ou coluna (`q1.c === q2.c`).
 2. **Diagonais:** Confere-se se a diferença absoluta entre as linhas é igual à diferença absoluta entre as colunas (`Math.abs(q1.r - q2.r) === Math.abs(q1.c - q2.c)`).
-3. **Feedback Visual:** Quando um conflito é detectado, a interface atualiza dinamicamente, adicionando a classe CSS `.conflict` para colorir as casas ameaçadas de vermelho.
+3. **Feedback Visual:** As células sob ameaça recebem dinamicamente a classe CSS `.conflict`, colorindo as casas de vermelho.
 
 ### Diagrama Simplificado
 ```mermaid
 graph TD
-    A[Usuário] -->|Ajusta N e Modo| B(Streamlit / Python)
-    B -->|Gera Parâmetros| C{Modo Ativo?}
-    C -->|Automático| D[Roda Algoritmo de Busca Python]
-    C -->|Manual| E[Injeta Iframe HTML/JS]
-    D --> F[Renderiza HTML Estático da Solução]
+    A[Usuário] -->|Ajusta N e Toggles| B(Streamlit / Python)
+    B -->|Avalia Parâmetros| C{Modo Manual?}
+    
+    C -->|Ativado| E[Injeta Iframe HTML/JS]
     E --> G[Lógica Local no Navegador JS]
     G -->|Cliques nas Casas| H[Atualiza Pilha LIFO 'queens']
     H --> I[Calcula Conflitos ao Vivo]
     I --> J[Atualiza CSS Cores Dinamicamente]
-```
 
+    C -->|Desativado| D{Calcular Todas?}
+    D -->|Sim| K[Roda DFS com Bitwise Pruning]
+    K -->|Retorna Número Total| L[Atualiza Métricas na Sidebar]
+    D -->|Não| M[Pula Varredura Completa]
+    
+    L --> N[Roda Backtracking Básico]
+    M --> N
+    N -->|Retorna 1ª Matriz Válida| F[Renderiza HTML Estático da Solução]
+```
 ---
 
 ## 📸 IMAGENS
